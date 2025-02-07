@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "api-user-post"
+name = "apirestfull_curso"
 version = "0.1.0"
 description = ""
 authors = ["MarcoAntonioGritti <m9946658@gmail.com>"]
