@@ -40,6 +40,11 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
     jwt.init_app(app)
 
+    # import models
+    from apirestfull_curso.src.models.user import User
+    from apirestfull_curso.src.models.role import Role
+    from apirestfull_curso.src.models.post import Post
+
     # Cria o application context para operações com o banco de dados
     with app.app_context():
         # Cria todas as tabelas (caso não existam)
