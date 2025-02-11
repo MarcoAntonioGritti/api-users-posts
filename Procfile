@@ -1,0 +1,1 @@
+web: gunicorn apirestfull_curso.src.app:app
