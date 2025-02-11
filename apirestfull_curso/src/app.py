@@ -3,12 +3,14 @@ import os
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
-
+from dotenv import load_dotenv
 from apirestfull_curso.src.models.base import db
 
 # instances
 migrate = Migrate()
 jwt = JWTManager()
+
+load_dotenv()
 
 
 def create_app(test_config=None):
@@ -16,8 +18,8 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY="dev",
-        SQLALCHEMY_DATABASE_URI="sqlite:///bank.sqlite",
-        JWT_SECRET_KEY="super-secret",
+        SQLALCHEMY_DATABASE_URI=os.getenv("DATABASE_URL"),
+        JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY", "super-secret"),
     )
 
     if test_config is None:
@@ -37,11 +39,6 @@ def create_app(test_config=None):
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-
-    # import models
-    from apirestfull_curso.src.models.user import User
-    from apirestfull_curso.src.models.role import Role
-    from apirestfull_curso.src.models.post import Post
 
     # Cria o application context para operações com o banco de dados
     with app.app_context():
