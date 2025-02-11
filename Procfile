@@ -1,1 +1,2 @@
-web: gunicorn apirestfull_curso.src.app:app
+web: gunicorn "apirestfull_curso.src.app:create_app()"
+    
