@@ -4,8 +4,7 @@ from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import inspect
 
-from apirestfull_curso.src.models.base import db
-from apirestfull_curso.src.models.user import User
+from apirestfull_curso.src.models import User, db
 from apirestfull_curso.src.utils import requires_roles
 
 app = Blueprint("user", __name__, url_prefix="/users")

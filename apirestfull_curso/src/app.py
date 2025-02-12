@@ -1,12 +1,13 @@
 import os
+
+from dotenv import load_dotenv
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
-from dotenv import load_dotenv
+
 from apirestfull_curso.src.models.base import db
-from apirestfull_curso.src.models.user import User
 from apirestfull_curso.src.models.role import Role
-from datetime import datetime
+from apirestfull_curso.src.models.user import User
 
 # instances
 migrate = Migrate()
@@ -31,23 +32,12 @@ def create_admin_user():
         db.session.commit()
 
 
-def create_app(test_config=None):
+def create_app(environment=os.environ["ENVIRONMENT"]):
     load_dotenv()
 
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY="dev",
-        SQLALCHEMY_DATABASE_URI=os.getenv("DATABASE_URL"),
-        JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY", "super-secret"),
-    )
-
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile("config.py", silent=True)
-    else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
+    app.config.from_object(f"apirestfull_curso.src.config.{environment.title()}Config")
 
     # ensure the instance folder exists
     try:
@@ -61,9 +51,7 @@ def create_app(test_config=None):
     jwt.init_app(app)
 
     # import models
-    from apirestfull_curso.src.models.user import User
-    from apirestfull_curso.src.models.role import Role
-    from apirestfull_curso.src.models.post import Post
+    from apirestfull_curso.src.models import Role, User, Post
 
     # Cria o application context para operações com o banco de dados
     with app.app_context():

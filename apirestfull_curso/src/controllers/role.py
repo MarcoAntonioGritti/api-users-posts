@@ -3,8 +3,7 @@ from http import HTTPStatus
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 
-from apirestfull_curso.src.models.base import db
-from apirestfull_curso.src.models.role import Role
+from apirestfull_curso.src.models import Role, db
 from apirestfull_curso.src.utils import requires_roles
 
 app = Blueprint("role", __name__, url_prefix="/roles")

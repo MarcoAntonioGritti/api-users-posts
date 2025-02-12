@@ -3,8 +3,7 @@ from http import HTTPStatus
 from flask import Blueprint, request
 from flask_jwt_extended import create_access_token
 
-from apirestfull_curso.src.models.base import db
-from apirestfull_curso.src.models.user import User
+from apirestfull_curso.src.models import User, db
 
 app = Blueprint("auth", __name__, url_prefix="/auth")
 
