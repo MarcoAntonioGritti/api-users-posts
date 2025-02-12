@@ -6,11 +6,9 @@ from apirestfull_curso.src.models.user import User
 
 
 def test_created_token_success(client):
-    role_admin = Role(name="Admin")
-    db.session.add(role_admin)
-    db.session.commit()
-
-    user = User(username="marcola", password="123", role_id=role_admin.id)
+    role = db.session.execute(db.select(Role).where(Role.name == "Admin")).scalar()
+    role_id = role.id
+    user = User(username="marcola", password="123", role_id=role_id)
     db.session.add(user)
     db.session.commit()
 

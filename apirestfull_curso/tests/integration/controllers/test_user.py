@@ -9,9 +9,10 @@ from apirestfull_curso.src.models.user import User
 
 def test_get_user_success_admin(client, access_token_admin):
     user = db.session.execute(db.select(User).where(User.id == 1)).scalar()
+    user_id = user.id
 
     response = client.get(
-        f"/users/get/{user.id}",
+        f"/users/get/{user_id}",
         headers={"Authorization": f"Bearer {access_token_admin}"},
     )
 
@@ -29,12 +30,12 @@ def test_get_user_success_admin(client, access_token_admin):
 
 def test_get_user_success_normal(client, access_token_normal):
     user = db.session.execute(db.select(User).where(User.id == 1)).scalar()
+    user_id = user.id
 
     response = client.get(
-        f"/users/get/{user.id}",
+        f"/users/get/{user_id}",
         headers={"Authorization": f"Bearer {access_token_normal}"},
     )
-
     assert response.status_code == HTTPStatus.OK
     assert response.json == {
         "id": user.id,
@@ -60,11 +61,13 @@ def test_get_user_not_found(client, access_token_admin):
 
 def test_list_users_success_admin(client):
 
-    role = Role(name="Admin")
-    db.session.add(role)
+    db.session.query(User).delete()
     db.session.commit()
 
-    user = User(username="marcola", password="123", role_id=role.id)
+    role = db.session.execute(db.select(Role).where(Role.name == "Admin")).scalar()
+    role_id = role.id
+
+    user = User(username="test", password="teste123", role_id=role_id)
     db.session.add(user)
     db.session.commit()
 
@@ -92,12 +95,14 @@ def test_list_users_success_admin(client):
     ]
 
 
-def test_list_users_success_normal(client):
-    role_normal = Role(name="Normal")
-    db.session.add(role_normal)
+def test_list_users_success_normal(client, create_role_normal):
+    db.session.query(User).delete()
     db.session.commit()
 
-    user = User(username="marcola", password="123", role_id=role_normal.id)
+    role = create_role_normal
+    role_id = role.id
+
+    user = User(username="marcola", password="123", role_id=role_id)
     db.session.add(user)
     db.session.commit()
 
@@ -139,7 +144,7 @@ def test_create_user(client, access_token_admin):
 
     assert response.status_code == HTTPStatus.CREATED
     assert response.json == {"message": "User created!"}
-    assert db.session.execute(db.select(func.count(User.id))).scalar() == 2
+    assert db.session.execute(db.select(func.count(User.id))).scalar() == 3
 
 
 def test_create_user_forbidden(client, access_token_normal):

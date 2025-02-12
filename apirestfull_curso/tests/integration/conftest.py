@@ -30,11 +30,9 @@ def client(app):
 
 @pytest.fixture()
 def access_token_admin(client):
-    role_admin = Role(name="Admin")
-    db.session.add(role_admin)
-    db.session.commit()
-
-    user = User(username="marcola", password="123", role_id=role_admin.id)
+    role = db.session.execute(db.select(Role).where(Role.name == "Admin")).scalar()
+    role_id = role.id
+    user = User(username="marcola", password="123", role_id=role_id)
     db.session.add(user)
     db.session.commit()
 
@@ -47,11 +45,11 @@ def access_token_admin(client):
 
 @pytest.fixture()
 def access_token_normal(client):
-    role_normal = Role(name="Normal")
-    db.session.add(role_normal)
+    role = Role(name="Normal")
+    db.session.add(role)
     db.session.commit()
 
-    user = User(username="marcola", password="123", role_id=role_normal.id)
+    user = User(username="marcola", password="123", role_id=role.id)
     db.session.add(user)
     db.session.commit()
 
@@ -86,4 +84,13 @@ def create_role_test():
     user = User(username="teste", password="321", role_id=role.id)
     db.session.add(user)
     db.session.commit()
+    return role
+
+
+@pytest.fixture()
+def create_role_normal():
+    role = Role(name="Normal")
+    db.session.add(role)
+    db.session.commit()
+
     return role
