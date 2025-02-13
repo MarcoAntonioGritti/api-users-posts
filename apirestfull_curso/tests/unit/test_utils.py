@@ -6,8 +6,6 @@ from apirestfull_curso.src.utils import requires_roles
 
 
 def test_create_app(app):
-    app = app
-
     # Vefificando se a app dada, retorna um instância do Flask
     assert isinstance(app, Flask)
 

@@ -6,13 +6,10 @@ from apirestfull_curso.src.models.base import db
 
 @pytest.fixture()
 def app():
-    app = create_app(
-        {
-            "SECRET_KEY": "test",
-            "SQLALCHEMY_DATABASE_URI": "sqlite://",  # Configurando um banco de dados em memória
-            "JWT_SECRET_KEY": "test",
-        }
-    )
+    # Cria a aplicação (usará o ambiente definido pela variável de ambiente)
+    app = create_app("testing")
+
+    # Entra no contexto da aplicação
     with app.app_context():
-        db.create_all()  # Cria todas as tabelas no banco de dados conforme os modelos definidos
-        yield app
+        db.create_all()  # Cria todas as tabelas no banco de dados
+        yield app  # Retorna a aplicação para o teste

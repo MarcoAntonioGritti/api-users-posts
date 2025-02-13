@@ -11,10 +11,13 @@ from apirestfull_curso.src.models.user import User
 
 @pytest.fixture()
 def app():
-    app = create_app(environment="testing")
+    # Cria a aplicação (usará o ambiente definido pela variável de ambiente)
+    app = create_app("testing")
+
+    # Entra no contexto da aplicação
     with app.app_context():
-        db.create_all()  # Cria todas as tabelas no banco de dados conforme os modelos definidos
-        yield app
+        db.create_all()  # Cria todas as tabelas no banco de dados
+        yield app  # Retorna a aplicação para o teste
 
 
 @pytest.fixture()
