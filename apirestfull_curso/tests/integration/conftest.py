@@ -7,6 +7,7 @@ from apirestfull_curso.src.models.base import db
 from apirestfull_curso.src.models.post import Post
 from apirestfull_curso.src.models.role import Role
 from apirestfull_curso.src.models.user import User
+from apirestfull_curso.src.app import bcrypt
 
 
 @pytest.fixture()
@@ -27,17 +28,27 @@ def client(app):
 
 @pytest.fixture()
 def access_token_admin(client):
+    # Busca a role "Admin"
     role = db.session.execute(db.select(Role).where(Role.name == "Admin")).scalar()
     role_id = role.id
-    user = User(username="marcola", password="123", role_id=role_id)
-    db.session.add(user)
-    db.session.commit()
 
+    # Cria um usuário admin
+    user = User(
+        username="marcola",
+        password=bcrypt.generate_password_hash("123"),  # Senha criptografada
+        role_id=role_id,
+    )
+    db.session.add(user)
+    db.session.commit()  # Confirma a transação
+
+    # Faz login com o usuário criado
     response = client.post(
-        "/auth/login", json={"username": user.username, "password": user.password}
+        "/auth/login",
+        json={"username": user.username, "password": "123"},  # Senha em texto plano
     )
 
-    return response.json["access_token"]
+    data = response.json
+    return data["access_token"]  # Retorna o token de acesso
 
 
 @pytest.fixture()
@@ -46,12 +57,16 @@ def access_token_normal(client):
     db.session.add(role)
     db.session.commit()
 
-    user = User(username="marcola", password="123", role_id=role.id)
+    user = User(
+        username="marcola",
+        password=bcrypt.generate_password_hash("123"),
+        role_id=role.id,
+    )
     db.session.add(user)
     db.session.commit()
 
     response = client.post(
-        "/auth/login", json={"username": user.username, "password": user.password}
+        "/auth/login", json={"username": user.username, "password": "123"}
     )
 
     return response.json["access_token"]
@@ -91,3 +106,20 @@ def create_role_normal():
     db.session.commit()
 
     return role
+
+
+@pytest.fixture()
+def create_user_test():
+    role = Role(name="Normal")
+    db.session.add(role)
+    db.session.commit()
+
+    user = User(
+        username="marcola",
+        password=bcrypt.generate_password_hash("123"),
+        role_id=role.id,
+    )
+    db.session.add(user)
+    db.session.commit()
+
+    return user

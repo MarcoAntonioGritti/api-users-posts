@@ -33,12 +33,8 @@ def test_get_role_success_normal(client, create_role_test, access_token_normal):
         headers={"Authorization": f"Bearer {access_token_normal}"},
     )
 
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == {
-        "id": role.id,
-        "name": role.name,
-        "users": [{"id": user.id, "username": user.username} for user in role.users],
-    }
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json == {"message": "User dont have access."}
 
 
 def test_get_role_not_found(client, access_token_admin):
@@ -78,7 +74,7 @@ def test_list_roles_access_admin(client, access_token_admin):
     assert new_role_data in response.json
 
 
-def test_list_roles__access_normal(client, access_token_normal):
+def test_list_roles__access_forbidden(client, access_token_normal):
     role = Role(name="Teste")
 
     db.session.add(role)
@@ -93,14 +89,8 @@ def test_list_roles__access_normal(client, access_token_normal):
         headers={"Authorization": f"Bearer {access_token_normal}"},
     )
 
-    new_role_data = {
-        "id": role.id,
-        "name": role.name,
-        "user": [user.username],
-    }
-
-    assert response.status_code == HTTPStatus.OK
-    assert new_role_data in response.json
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json == {"message": "User dont have access."}
 
 
 def test_create_role_success(client, access_token_admin):

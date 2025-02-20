@@ -25,7 +25,7 @@ def _create_role_():
 
 @app.route("/list", methods=["GET"])
 @jwt_required()
-@requires_roles("Admin", "Normal")
+@requires_roles("Admin")
 def _list_roles_():
     query = db.select(Role)
     roles = db.session.execute(query).scalars().all()
@@ -41,7 +41,7 @@ def _list_roles_():
 
 @app.route("/get/<int:role_id>", methods=["GET"])
 @jwt_required()
-@requires_roles("Admin", "Normal")
+@requires_roles("Admin")
 def _get_by_id_(role_id):
     role = db.get_or_404(Role, role_id)
     return {

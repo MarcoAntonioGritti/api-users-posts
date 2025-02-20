@@ -1,28 +1,51 @@
 from http import HTTPStatus
 
+from apirestfull_curso.src.controllers.auth import _check_valid_password
 from apirestfull_curso.src.models.base import db
 from apirestfull_curso.src.models.role import Role
 from apirestfull_curso.src.models.user import User
 
 
-def test_created_token_success(client):
-    role = db.session.execute(db.select(Role).where(Role.name == "Admin")).scalar()
-    role_id = role.id
-    user = User(username="marcola", password="123", role_id=role_id)
-    db.session.add(user)
-    db.session.commit()
+def test_created_token_success(client, create_user_test):
+    user = create_user_test
 
-    response = client.post(
-        "/auth/login", json={"username": user.username, "password": user.password}
-    )
+    login_data = {
+        "username": user.username,
+        "password": "123",  # Supondo que a senha do usuário de teste seja "password123"
+    }
 
-    user = db.session.execute(
-        db.select(User).where(User.username == user.username)
-    ).scalar()
+    # Faz a requisição de login
+    response = client.post("/auth/login", json=login_data)
 
-    if not user or user.password != user.password:
-        return {"message": "Bad username or password"}, HTTPStatus.UNAUTHORIZED
+    assert response.status_code == HTTPStatus.OK
+    assert "access_token" in response.json
 
-    access_token = response.json["access_token"]
 
-    assert response.json == {"access_token": access_token}
+def test_login_invalid_username(client, create_user_test):
+    user = create_user_test
+
+    login_data = {
+        "username": "name",
+        "password": "123",  # Supondo que a senha do usuário de teste seja "password123"
+    }
+
+    # Faz a requisição de login
+    response = client.post("/auth/login", json=login_data)
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json == {"message": "Bad username or password"}
+
+
+def test_login_invalid_password(client, create_user_test):
+    user = create_user_test
+
+    login_data = {
+        "username": user.username,
+        "password": "1234   ",  # Supondo que a senha do usuário de teste seja "password123"
+    }
+
+    # Faz a requisição de login
+    response = client.post("/auth/login", json=login_data)
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json == {"message": "Bad username or password"}

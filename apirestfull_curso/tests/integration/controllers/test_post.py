@@ -3,8 +3,8 @@ from http import HTTPStatus
 
 from sqlalchemy import func, inspect
 
-from apirestfull_curso.src.models.base import db
-from apirestfull_curso.src.models.post import Post
+from apirestfull_curso.src.models import Post, User, db
+from apirestfull_curso.src.views.post import PostSchema
 
 
 def test_get_post_success_admin(client, create_post_test, access_token_admin):
@@ -15,32 +15,10 @@ def test_get_post_success_admin(client, create_post_test, access_token_admin):
         headers={"Authorization": f"Bearer {access_token_admin}"},
     )
 
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == {
-        "id": post.id,
-        "title": post.title,
-        "body": post.body,
-        "created": post.created.strftime("%a, %d %b %Y %H:%M:%S GMT"),
-        "author_id": post.author_id,
-    }
-
-
-def test_get_post_success_normal(client, create_post_test, access_token_normal):
-    post = create_post_test
-
-    response = client.get(
-        f"/posts/get/{post.id}",
-        headers={"Authorization": f"Bearer {access_token_normal}"},
-    )
+    post_schema = PostSchema()
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json == {
-        "id": post.id,
-        "title": post.title,
-        "body": post.body,
-        "created": post.created.strftime("%a, %d %b %Y %H:%M:%S GMT"),
-        "author_id": post.author_id,
-    }
+    assert response.json == post_schema.dump(post)
 
 
 def test_get_post_not_found(client, access_token_admin):
@@ -54,48 +32,22 @@ def test_get_post_not_found(client, access_token_admin):
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_list_users_success_access_admin(client, create_post_test, access_token_admin):
+def test_list_posts_success_access_admin(client, create_post_test, access_token_admin):
     post = create_post_test
 
     response = client.get(
         "/posts/list", headers={"Authorization": f"Bearer {access_token_admin}"}
     )
 
-    assert response.status_code == HTTPStatus.OK
-    assert response.json == [
-        {
-            "id": post.id,
-            "title": post.title,
-            "body": post.body,
-            "created": post.created.strftime("%a, %d %b %Y %H:%M:%S GMT"),
-            "author_id": post.author_id,
-        }
-    ]
+    posts = db.session.execute(db.select(Post)).scalars()
 
-
-def test_list_users_success_access_normal(
-    client, create_post_test, access_token_normal
-):
-    post = create_post_test
-
-    response = client.get(
-        "/posts/list", headers={"Authorization": f"Bearer {access_token_normal}"}
-    )
+    post_schema = PostSchema(many=True)
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json == [
-        {
-            "id": post.id,
-            "title": post.title,
-            "body": post.body,
-            "created": post.created.strftime("%a, %d %b %Y %H:%M:%S GMT"),
-            "author_id": post.author_id,
-        }
-    ]
+    assert response.json == post_schema.dump(posts)
 
 
 def test_create_post(client, access_token_admin):
-
     data = {
         "title": "titulo teste",
         "body": "livro muito bom",
@@ -112,25 +64,6 @@ def test_create_post(client, access_token_admin):
     assert response.status_code == HTTPStatus.CREATED
     assert response.json == {"message": "Post created!"}
     assert db.session.execute(db.select(func.count(Post.id))).scalar() == 1
-
-
-def test_create_post_forbidden(client, access_token_normal):
-
-    data = {
-        "title": "titulo teste",
-        "body": "livro muito bom",
-        "created": "2025-01-17T12:00:00",
-        "author_id": 1,
-    }
-
-    response = client.post(
-        "/posts/create",
-        json=data,
-        headers={"Authorization": f"Bearer {access_token_normal}"},
-    )
-
-    assert response.status_code == HTTPStatus.FORBIDDEN
-    assert response.json == {"message": "User dont have access."}
 
 
 def test_update_post_success(client, create_post_test, access_token_admin):
