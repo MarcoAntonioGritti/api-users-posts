@@ -25,9 +25,9 @@ Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
   ```
 ### Instalação
 
+```
 1. Clone o repositório:
 
-```
 git clone <url-do-repositorio>
 cd apirestfull_curso
 
